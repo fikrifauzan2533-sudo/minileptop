@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WebLaptop</title>
+<style>
+:root{--bg1:#4f8cff;--bg2:#9b5cff;--win:#fff;--tx:#1c1e24;--bar:rgba(255,255,255,.78);--bd:#d9dce3;--ac:#3b6cf6;--mut:#eef0f5;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--win:#23262e;--tx:#eceef3;--bar:rgba(25,27,33,.8);--bd:#3a3e49;--mut:#2f333d;color-scheme:dark}}
+:root[data-theme="dark"]{--win:#23262e;--tx:#eceef3;--bar:rgba(25,27,33,.8);--bd:#3a3e49;--mut:#2f333d;color-scheme:dark}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{position:relative;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--tx);background:linear-gradient(135deg,var(--bg1),var(--bg2));user-select:none}
+#desk{position:absolute;inset:0 0 46px 0}
+.ico{position:absolute;left:14px;width:84px;text-align:center;color:#fff;font-size:12px;cursor:pointer;padding:6px;border-radius:10px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.ico:hover,.ico:focus{background:rgba(255,255,255,.2);outline:none}
+.ico b{display:block;font-size:34px;font-weight:400;margin-bottom:2px}
+.win{position:absolute;background:var(--win);border:1px solid var(--bd);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.3);display:flex;flex-direction:column;overflow:hidden;min-width:260px}
+.win.max{inset:0!important;width:auto!important;height:auto!important;border-radius:0}
+.win.min{display:none}
+.tb{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--mut);cursor:move;touch-action:none;font-size:13px;font-weight:600}
+.tb span{flex:1}
+.tb button{width:26px;height:26px;border:0;border-radius:6px;background:transparent;color:var(--tx);cursor:pointer;font-size:14px}
+.tb button:hover{background:var(--bd)}
+.tb .x:hover{background:#e5484d;color:#fff}
+.body{flex:1;overflow:auto;padding:12px;user-select:text}
+#bar{position:absolute;left:0;right:0;bottom:0;height:46px;background:var(--bar);backdrop-filter:blur(14px);border-top:1px solid var(--bd);display:flex;align-items:center;gap:6px;padding:0 8px;z-index:9999}
+#bar button{border:0;background:transparent;color:var(--tx);height:34px;padding:0 12px;border-radius:8px;cursor:pointer;font-size:13px}
+#bar button:hover,#bar button.on{background:var(--mut)}
+#start{font-weight:700;background:var(--ac)!important;color:#fff!important}
+#tasks{flex:1;display:flex;gap:4px;overflow-x:auto}
+#clock{font-size:12px;text-align:right;padding:0 8px;line-height:1.25}
+#menu{position:absolute;left:8px;bottom:54px;width:300px;background:var(--bar);backdrop-filter:blur(14px);border:1px solid var(--bd);border-radius:12px;padding:8px;z-index:9999;display:none;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+#menu button{border:0;background:transparent;color:var(--tx);cursor:pointer;border-radius:8px;font-family:inherit}
+#menu button:hover{background:var(--mut)}
+.mg{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;max-height:300px;overflow-y:auto}
+.mg button{padding:8px 2px;font-size:11px;text-align:center}
+.mg button b{display:block;font-size:26px;font-weight:400}
+#menu .mo{display:block;width:100%;text-align:left;margin-top:8px;padding:8px;font-size:12px;border-top:1px solid var(--bd);border-radius:0 0 8px 8px}
+#menu input::placeholder{color:inherit;opacity:.5}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.grid button,.btn{border:1px solid var(--bd);background:var(--mut);color:var(--tx);border-radius:8px;padding:12px 0;font-size:16px;cursor:pointer}
+.grid button:active,.btn:active{filter:brightness(.9)}
+.grid .op{background:var(--ac);color:#fff;border-color:var(--ac)}
+.disp{background:var(--mut);border-radius:8px;padding:10px;text-align:right;font-size:26px;min-height:54px;margin-bottom:8px;overflow:hidden;word-break:break-all}
+textarea{width:100%;height:calc(100% - 28px);min-height:160px;resize:none;border:1px solid var(--bd);border-radius:8px;padding:10px;background:var(--win);color:var(--tx);font:14px/1.5 system-ui}
+.big{font-size:42px;font-weight:700;text-align:center;margin:6px 0}
+.sm{font-size:12px;opacity:.7;text-align:center}
+.btn{padding:8px 14px;font-size:13px;margin:4px 4px 0 0}
+.sw{display:inline-block;width:44px;height:30px;border-radius:8px;border:2px solid var(--bd);cursor:pointer;margin:4px 6px 0 0}
+h4{margin:10px 0 4px}
+/* tema keren */
+*{scrollbar-width:thin;scrollbar-color:rgba(128,128,128,.45) transparent}
+@keyframes pop{from{opacity:0;transform:scale(.93) translateY(12px)}to{opacity:1;transform:none}}
+body::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(650px 420px at 15% 15%,rgba(255,255,255,.28),transparent 70%),radial-gradient(560px 560px at 90% 85%,rgba(0,0,0,.28),transparent 70%)}
+#desk{inset:0 0 64px 0}
+.ico{width:88px}
+.ico b{width:54px;height:54px;line-height:54px;margin:0 auto 4px;border-radius:16px;background:rgba(255,255,255,.2);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.35);box-shadow:0 6px 18px rgba(0,0,0,.28);font-size:27px;transition:transform .15s}
+.ico:hover b,.ico:focus b{transform:translateY(-3px) scale(1.07)}
+.ico:hover,.ico:focus{background:transparent}
+.win{background:var(--win);background:color-mix(in srgb,var(--win) 86%,transparent);backdrop-filter:blur(24px) saturate(1.5);border:1px solid rgba(255,255,255,.4);border-radius:16px;box-shadow:0 28px 70px rgba(0,0,0,.38),0 2px 6px rgba(0,0,0,.2);animation:pop .22s cubic-bezier(.2,.9,.3,1.15)}
+.win.max{border-radius:0}
+.tb{padding:10px 12px;gap:8px;background:color-mix(in srgb,var(--mut) 65%,transparent);border-bottom:1px solid color-mix(in srgb,var(--bd) 55%,transparent)}
+.tb span{text-align:center;font-weight:600;letter-spacing:.2px}
+.tb::after{content:'';width:55px}
+.tb .x{order:-3}.tb .m{order:-2}.tb .mx{order:-1}
+.tb .m,.tb .mx,.tb .x{width:13px;height:13px;border-radius:50%;font-size:9px;line-height:13px;padding:0;color:transparent;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.2)}
+.tb .x{background:#ff5f57}.tb .m{background:#febc2e}.tb .mx{background:#28c840}
+.tb:hover .m,.tb:hover .mx,.tb:hover .x{color:rgba(0,0,0,.65)}
+.tb .x:hover{background:#ff5f57;color:rgba(0,0,0,.85)}.tb .m:hover{background:#febc2e}.tb .mx:hover{background:#28c840}
+#bar{left:8px;right:8px;bottom:8px;height:50px;border-radius:20px;border:1px solid rgba(255,255,255,.4);box-shadow:0 12px 32px rgba(0,0,0,.3);backdrop-filter:blur(24px) saturate(1.5)}
+#bar button{border-radius:12px;transition:background .15s}
+#bar button.on{background:var(--mut);box-shadow:inset 0 -3px 0 var(--ac)}
+#start{background:linear-gradient(135deg,var(--ac),#a35cff)!important;box-shadow:0 4px 14px rgba(110,90,255,.45);font-weight:700}
+#menu{left:12px;bottom:70px;border-radius:22px;padding:12px;border:1px solid rgba(255,255,255,.4);box-shadow:0 24px 60px rgba(0,0,0,.42);backdrop-filter:blur(26px) saturate(1.5);animation:pop .18s ease}
+#menu .mg button{border-radius:14px;transition:transform .12s,background .15s}
+#menu .mg button:hover{transform:translateY(-2px)}
+.mg button b{filter:drop-shadow(0 3px 4px rgba(0,0,0,.2))}
+.btn,.grid button{border-radius:12px;background:linear-gradient(180deg,var(--win),var(--mut));box-shadow:0 1px 2px rgba(0,0,0,.15);transition:transform .1s,filter .15s,box-shadow .15s}
+.btn:hover,.grid button:hover{filter:brightness(1.06);transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.18)}
+.grid .op{background:linear-gradient(135deg,var(--ac),#7a5cff);border-color:transparent}
+.disp{background:linear-gradient(135deg,#171b27,#2d3550);color:#fff;border-radius:16px;font-size:34px;font-weight:300;padding:14px;box-shadow:inset 0 2px 8px rgba(0,0,0,.35)}
+input:not([type=range]):not([type=color]):not([type=checkbox]),textarea,select{transition:box-shadow .15s}
+input:not([type=range]):not([type=color]):not([type=checkbox]):focus,textarea:focus,select:focus{outline:none;border-color:var(--ac)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 28%,transparent)}
+.big{background:linear-gradient(135deg,var(--ac),#c05cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sw{width:38px;height:38px;border-radius:50%;transition:transform .15s;box-shadow:0 3px 8px rgba(0,0,0,.25)}.sw:hover{transform:scale(1.15)}
+.ed img{max-width:100%;height:auto;border-radius:4px}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&amp;family=Open+Sans:wght@400;700&amp;family=Lato:wght@400;700&amp;family=Montserrat:wght@400;700&amp;family=Poppins:wght@400;700&amp;family=Inter:wght@400;700&amp;family=Nunito:wght@400;700&amp;family=Raleway:wght@400;700&amp;family=Quicksand:wght@400;700&amp;family=Oswald:wght@400;700&amp;family=Playfair+Display:wght@400;700&amp;family=Merriweather:wght@400;700&amp;family=Lora:wght@400;700&amp;family=Roboto+Mono&amp;family=Source+Code+Pro&amp;family=Pacifico&amp;family=Dancing+Script&amp;family=Caveat&amp;family=Lobster&amp;family=Bebas+Neue&amp;family=Abril+Fatface&amp;family=Comfortaa&amp;family=Righteous&amp;family=Permanent+Marker&amp;display=swap">
+</head>
+<body>
+<div id="desk"></div>
+<div id="menu"></div>
+<div id="bar"><button id="start">⊞ Mulai</button><div id="tasks"></div><div id="clock"></div></div>
+<script>
+var $=function(s){return document.querySelector(s)};
+var desk=$('#desk'),tasks=$('#tasks'),menu=$('#menu'),z=10,wins={};
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+
+function toast(m){var t=document.createElement('div');t.textContent=m;t.style.cssText='position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:8px 14px;border-radius:8px;z-index:99999;font-size:13px';desk.appendChild(t);setTimeout(function(){t.remove()},2400)}
+async function dl(n,d){try{var D=window.claude?await claude.use('downloads'):null;if(!D){toast('Unduh tidak tersedia di tampilan ini');return}await D.save({filename:n,data:d})}catch(e){if(!e||e.code!=='declined')toast('Gagal mengunduh')}}
+var FONTS=['Arial','Georgia','Times New Roman','Courier New','Verdana','Trebuchet MS','Comic Sans MS','Roboto','Open Sans','Lato','Montserrat','Poppins','Inter','Nunito','Raleway','Quicksand','Oswald','Playfair Display','Merriweather','Lora','Roboto Mono','Source Code Pro','Pacifico','Dancing Script','Caveat','Lobster','Bebas Neue','Abril Fatface','Comfortaa','Righteous','Permanent Marker'];
+function fam(n){return "'"+n+"',system-ui,sans-serif"}
+function img2url(f,max){return new Promise(function(ok,no){var r=new FileReader();r.onerror=no;r.onload=function(){var im=new Image();im.onerror=no;im.onload=function(){var s=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok(c.toDataURL(f.type==='image/png'?'image/png':'image/jpeg',.85))};im.src=r.result};r.readAsDataURL(f)})}
+function pick(cb,max){var i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=function(){var f=i.files[0];if(f)img2url(f,max||800).then(cb,function(){toast('Gambar gagal dibaca')})};i.click()}
+var APPS=[
+{id:'calc',t:'Kalkulator',i:'🧮',w:280,h:410,r:function(b){
+ var ex='',keys=['C','⌫','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','0','.','(',')','='];
+ b.innerHTML='<div class="disp">0</div><div class="grid"></div>';
+ var d=b.querySelector('.disp'),g=b.querySelector('.grid');
+ keys.forEach(function(k){var e=document.createElement('button');e.textContent=k;
+  if('÷×−+='.indexOf(k)>-1)e.className='op';
+  e.onclick=function(){
+   if(k==='C')ex='';
+   else if(k==='⌫')ex=ex.slice(0,-1);
+   else if(k==='='){try{var s=ex.replace(/÷/g,'/').replace(/×/g,'*').replace(/−/g,'-').replace(/%/g,'/100');
+     if(!/^[0-9+\-*\/.() ]+$/.test(s))throw 0;var v=Function('"use strict";return ('+s+')')();ex=String(+v.toFixed(8))}catch(x){ex='Error'}}
+   else{if(ex==='Error')ex='';ex+=k}
+   d.textContent=ex||'0'};g.appendChild(e)});
+}},
+{id:'note',t:'Catatan',i:'📝',w:380,h:340,r:function(b){
+ b.innerHTML='<div class="sm" style="text-align:left;margin-bottom:6px">Tersimpan otomatis · <span id="wc">0 kata</span></div><textarea placeholder="Tulis catatan di sini…"></textarea>';
+ var t=b.querySelector('textarea'),w=b.querySelector('#wc');t.value=store('note')||'';
+ function u(){var n=t.value.trim()?t.value.trim().split(/\s+/).length:0;w.textContent=n+' kata'}
+ u();t.oninput=function(){store('note',t.value);u()};
+}},
+{id:'clock',t:'Jam',i:'🕒',w:320,h:340,r:function(b){
+ b.innerHTML='<div class="big" id="ct"></div><div class="sm" id="cd"></div><h4>Stopwatch</h4><div class="big" id="sw" style="font-size:32px">00:00.0</div><div style="text-align:center"><button class="btn" id="a">Mulai</button><button class="btn" id="r">Reset</button></div>';
+ var ms=0,iv=null,st=0;
+ function tick(){var n=new Date();b.querySelector('#ct').textContent=n.toLocaleTimeString('id-ID');b.querySelector('#cd').textContent=n.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var t=ms+(iv?Date.now()-st:0),m=Math.floor(t/60000),s=Math.floor(t/1000)%60,x=Math.floor(t/100)%10;
+  b.querySelector('#sw').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s+'.'+x}
+ var loop=setInterval(function(){if(!document.body.contains(b)){clearInterval(loop);return}tick()},100);tick();
+ b.querySelector('#a').onclick=function(){if(iv){ms+=Date.now()-st;iv=null;this.textContent='Lanjut'}else{st=Date.now();iv=1;this.textContent='Jeda'}};
+ b.querySelector('#r').onclick=function(){ms=0;iv=null;b.querySelector('#a').textContent='Mulai'};
+}},
+{id:'todo',t:'Tugas',i:'✅',w:340,h:380,r:function(b){
+ var L=[];try{L=JSON.parse(store('todo')||'[]')}catch(e){}
+ b.innerHTML='<div style="display:flex;gap:6px"><input id="in" placeholder="Tugas baru…" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--bd);background:var(--win);color:var(--tx)"><button class="btn" id="ad" style="margin:0">Tambah</button></div><div id="ls"></div>';
+ var ls=b.querySelector('#ls'),inp=b.querySelector('#in');
+ function draw(){store('todo',JSON.stringify(L));ls.innerHTML='';
+  L.forEach(function(o,i){var r=document.createElement('div');r.style.cssText='display:flex;gap:8px;align-items:center;padding:8px 2px;border-bottom:1px solid var(--bd)';
+   var c=document.createElement('input');c.type='checkbox';c.checked=o.d;c.onchange=function(){o.d=c.checked;draw()};
+   var s=document.createElement('span');s.textContent=o.t;s.style.cssText='flex:1;'+(o.d?'text-decoration:line-through;opacity:.5':'');
+   var x=document.createElement('button');x.textContent='✕';x.className='btn';x.style.cssText='margin:0;padding:2px 8px';x.onclick=function(){L.splice(i,1);draw()};
+   r.append(c,s,x);ls.appendChild(r)})}
+ function add(){if(inp.value.trim()){L.push({t:inp.value.trim(),d:false});inp.value='';draw()}}
+ b.querySelector('#ad').onclick=add;inp.onkeydown=function(e){if(e.key==='Enter')add()};draw();
+}},
+{id:'web',t:'Browser',i:'🌐',w:560,h:420,r:function(b){
+ b.style.padding='0';b.style.display='flex';b.style.flexDirection='column';
+ var T=[{h:[''],i:0}],c=0;
+ b.innerHTML='<div class="bt" style="display:flex;gap:4px;padding:6px 6px 0;background:var(--mut);overflow-x:auto"></div><div style="display:flex;gap:4px;padding:6px;border-bottom:1px solid var(--bd)"><button class="btn" data-a="b" style="margin:0;padding:6px 10px">←</button><button class="btn" data-a="f" style="margin:0;padding:6px 10px">→</button><button class="btn" data-a="h" style="margin:0;padding:6px 10px">🏠</button><input class="ad" placeholder="Cari atau ketik alamat" style="flex:1;min-width:0;padding:6px 12px;border-radius:16px;border:1px solid var(--bd);background:var(--win);color:var(--tx)"><button class="btn" data-a="g" style="margin:0;padding:6px 12px">Buka</button></div><div class="pg" style="flex:1;overflow:auto;padding:16px"></div>';
+ var bt=b.querySelector('.bt'),ad=b.querySelector('.ad'),pg=b.querySelector('.pg');
+ function url(){var t=T[c];return t.h[t.i]}
+ function lab(u){if(!u)return 'Tab baru';try{return new URL(u).hostname.replace(/^www\./,'')}catch(e){return u}}
+ function go(q){q=q.trim();if(!q)return;var u;
+  if(/^https?:\/\//i.test(q))u=q.replace(/^http:/i,'https:');
+  else if(/^[^\s]+\.[a-z]{2,}(\/.*)?$/i.test(q))u='https://'+q;
+  else u='https://www.google.com/search?q='+encodeURIComponent(q);
+  var t=T[c];t.h=t.h.slice(0,t.i+1);t.h.push(u);t.i++;draw();
+  try{window.open(u,'_blank','noopener')}catch(e){}}
+ function draw(){
+  bt.innerHTML='';
+  T.forEach(function(t,k){var e=document.createElement('button');e.className='btn';e.style.cssText='margin:0;padding:6px 10px;border-radius:8px 8px 0 0;font-size:12px;white-space:nowrap;'+(k===c?'background:var(--win)':'');
+   e.textContent=lab(t.h[t.i]);e.onclick=function(){c=k;draw()};
+   if(T.length>1){var x=document.createElement('span');x.textContent='  ✕';x.onclick=function(ev){ev.stopPropagation();T.splice(k,1);c=Math.min(c,T.length-1);draw()};e.appendChild(x)}
+   bt.appendChild(e)});
+  var p=document.createElement('button');p.className='btn';p.textContent='+';p.style.cssText='margin:0;padding:4px 10px';p.onclick=function(){T.push({h:[''],i:0});c=T.length-1;draw()};bt.appendChild(p);
+  var u=url();ad.value=u;pg.innerHTML='';
+  if(!u){
+   var h=document.createElement('div');h.className='big';h.textContent='🌐 Browser';pg.appendChild(h);
+   var s=document.createElement('input');s.placeholder='Cari di Google atau ketik alamat web';s.style.cssText='display:block;width:100%;max-width:420px;margin:10px auto 18px;padding:10px 16px;border-radius:24px;border:1px solid var(--bd);background:var(--win);color:var(--tx);font-size:14px';
+   s.onkeydown=function(e){if(e.key==='Enter')go(s.value)};pg.appendChild(s);
+   var g=document.createElement('div');g.className='grid';g.style.maxWidth='420px';g.style.margin='0 auto';
+   [['Google','https://www.google.com'],['YouTube','https://www.youtube.com'],['Wikipedia','https://id.wikipedia.org'],['GitHub','https://github.com']].forEach(function(z){var e=document.createElement('button');e.textContent=z[0];e.style.cssText='grid-column:span 2;font-size:14px';e.onclick=function(){go(z[1])};g.appendChild(e)});
+   pg.appendChild(g)
+  }else{
+   var d=document.createElement('div');d.style.textAlign='center';
+   var a=document.createElement('div');a.className='big';a.style.fontSize='24px';a.textContent=lab(u);d.appendChild(a);
+   var m=document.createElement('div');m.className='sm';m.style.wordBreak='break-all';m.textContent=u;d.appendChild(m);
+   var l=document.createElement('a');l.className='btn';l.textContent='Buka di tab baru ↗';l.href=u;l.target='_blank';l.rel='noopener noreferrer';l.style.cssText='display:inline-block;margin-top:14px;text-decoration:none;padding:10px 18px;background:var(--ac);color:#fff';d.appendChild(l);
+   var n=document.createElement('p');n.className='sm';n.textContent='Situs luar tidak bisa ditampilkan di dalam halaman ini karena batasan keamanan, jadi dibuka di tab browser sungguhan.';d.appendChild(n);
+   pg.appendChild(d)}}
+ b.querySelectorAll('[data-a]').forEach(function(e){e.onclick=function(){var t=T[c],a=e.dataset.a;
+  if(a==='b'&&t.i>0)t.i--;else if(a==='f'&&t.i<t.h.length-1)t.i++;else if(a==='h'){t.h=[''];t.i=0}else if(a==='g'){go(ad.value);return}
+  draw()}});
+ ad.onkeydown=function(e){if(e.key==='Enter')go(ad.value)};
+ draw();
+}},
+{id:'ai',t:'Asisten AI',i:'✨',w:420,h:480,r:function(b){
+ b.style.padding='0';b.style.display='flex';b.style.flexDirection='column';
+ b.innerHTML='<div class="ms" style="flex:1;overflow:auto;padding:12px"></div><div style="display:flex;gap:6px;padding:8px;border-top:1px solid var(--bd)"><input class="q" placeholder="Tanya apa saja…" style="flex:1;min-width:0;padding:8px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--win);color:var(--tx)"><button class="btn" style="margin:0">Kirim</button></div>';
+ var ms=b.querySelector('.ms'),q=b.querySelector('.q'),btn=b.querySelector('.btn'),H=[],busy=false,S=null;
+ function bub(role,txt){var d=document.createElement('div');d.style.cssText='margin:6px 0;padding:8px 12px;border-radius:12px;max-width:88%;white-space:pre-wrap;user-select:text;'+(role==='user'?'background:var(--ac);color:#fff;margin-left:auto':'background:var(--mut)');d.textContent=txt;ms.appendChild(d);ms.scrollTop=ms.scrollHeight;return d}
+ bub('assistant','Halo! Saya asisten AI di WebLaptop. Ada yang bisa saya bantu?');
+ async function send(){
+  var t=q.value.trim();if(!t||busy)return;q.value='';bub('user',t);H.push({role:'user',content:t});
+  if(!S){try{S=window.claude?await claude.use('sample'):null}catch(e){S=null}}
+  if(!S){bub('assistant','Fitur AI tidak tersedia di tampilan ini.');H.pop();return}
+  busy=true;var o=bub('assistant','…');
+  var inp=H.map(function(m,i){return i===0?{role:m.role,content:'Kamu asisten AI di WebLaptop. Jawab ringkas dan ramah dalam bahasa yang dipakai pengguna.\n\n'+m.content}:m});
+  try{var r=await S(inp,{cache:false,onText:function(x){o.textContent=x.text;ms.scrollTop=ms.scrollHeight}});o.textContent=r.text;H.push({role:'assistant',content:r.text})}
+  catch(e){o.textContent=e&&e.code==='not_granted'?'Izin AI ditolak. Muat ulang halaman untuk mencoba lagi.':e&&e.code==='rate_limited'?'Terlalu banyak permintaan, coba lagi sebentar.':'Gagal mendapatkan jawaban.';H.pop()}
+  busy=false}
+ btn.onclick=send;q.onkeydown=function(e){if(e.key==='Enter')send()};
+}},
+{id:'doc',t:'Dokumen',i:'📄',w:520,h:440,r:function(b){
+ b.style.padding='0';b.style.display='flex';b.style.flexDirection='column';
+ b.innerHTML='<div class="tl" style="display:flex;flex-wrap:wrap;gap:4px;padding:6px;border-bottom:1px solid var(--bd)"></div><div class="ed" contenteditable="true" style="flex:1;overflow:auto;padding:18px;outline:none;line-height:1.6"></div><div class="sm" style="padding:4px 10px;text-align:left"></div>';
+ var tl=b.querySelector('.tl'),ed=b.querySelector('.ed'),st=b.querySelector('.sm');
+ function sv(){store('doc',ed.innerHTML);var t=ed.innerText.trim();st.textContent=(t?t.split(/\s+/).length:0)+' kata · tersimpan otomatis'}
+ [['B','bold'],['I','italic'],['U','underline'],['Judul','formatBlock','h2'],['• Daftar','insertUnorderedList'],['1. Daftar','insertOrderedList'],['Kiri','justifyLeft'],['Tengah','justifyCenter']].forEach(function(x){var e=document.createElement('button');e.className='btn';e.style.cssText='margin:0;padding:4px 10px;font-size:13px';e.textContent=x[0];e.onmousedown=function(v){v.preventDefault()};e.onclick=function(){document.execCommand(x[1],false,x[2]||null);sv()};tl.appendChild(e)});
+ var u=document.createElement('button');u.className='btn';u.style.cssText='margin:0 0 0 auto;padding:4px 10px;font-size:13px';u.textContent='⬇ Unduh';u.onclick=function(){dl('dokumen.html','<!doctype html><meta charset="utf-8"><title>Dokumen</title>'+ed.innerHTML)};tl.appendChild(u);
+ ed.innerHTML=store('doc')||'<h2>Dokumen baru</h2><p>Mulai menulis di sini…</p>';
+ ed.oninput=sv;sv();
+ var rg=null;function keep(){var s=getSelection();if(s.rangeCount&&ed.contains(s.anchorNode))rg=s.getRangeAt(0).cloneRange()}
+ function back(){ed.focus();if(rg){var s=getSelection();s.removeAllRanges();s.addRange(rg)}}
+ ['keyup','mouseup','touchend','focus'].forEach(function(n){ed.addEventListener(n,keep)});
+ function sel(opts,ph,f){var e=document.createElement('select');e.style.cssText='padding:4px;border-radius:6px;border:1px solid var(--bd);background:var(--win);color:var(--tx);font-size:12px;max-width:120px';var o0=document.createElement('option');o0.textContent=ph;e.appendChild(o0);opts.forEach(function(o){var x=document.createElement('option');x.value=o[0];x.textContent=o[1];if(o[2])x.style.fontFamily=o[2];e.appendChild(x)});e.onchange=function(){if(e.value){back();f(e.value);sv()}e.selectedIndex=0};tl.insertBefore(e,u)}
+ sel(FONTS.map(function(n){return [n,n,fam(n)]}),'Font',function(v){document.execCommand('fontName',false,v)});
+ sel([[2,'Kecil'],[3,'Normal'],[4,'Sedang'],[5,'Besar'],[6,'Sangat besar'],[7,'Raksasa']],'Ukuran',function(v){document.execCommand('fontSize',false,v)});
+ var cl=document.createElement('input');cl.type='color';cl.value='#000000';cl.title='Warna teks';cl.style.cssText='height:28px;width:32px;border:0;background:none;padding:0';cl.oninput=function(){back();document.execCommand('foreColor',false,cl.value);sv()};tl.insertBefore(cl,u);
+ var im=document.createElement('button');im.className='btn';im.style.cssText='margin:0;padding:4px 10px;font-size:13px';im.textContent='🖼 Gambar';im.onmousedown=function(v){v.preventDefault()};im.onclick=function(){keep();pick(function(d){back();document.execCommand('insertImage',false,d);sv()},700)};tl.insertBefore(im,u);
+}},
+{id:'sheet',t:'Lembar',i:'📊',w:620,h:420,r:function(b){
+ var C='ABCDEFGH'.split(''),R=14,D={};try{D=JSON.parse(store('sheet')||'{}')}catch(e){}
+ b.style.padding='0';
+ b.innerHTML='<div style="padding:6px;display:flex;gap:6px;align-items:center;border-bottom:1px solid var(--bd)"><span class="sm" style="flex:1;text-align:left">Ketik angka atau rumus: =SUM(A1:A5), =A1*B1</span><button class="btn" style="margin:0">⬇ CSV</button></div><div style="overflow:auto;height:calc(100% - 44px)"><table style="border-collapse:collapse;font-size:13px"></table></div>';
+ function ev(ref,dp){var v=D[ref];if(!v)return 0;if(v[0]!=='=')return parseFloat(v)||0;if(dp>8)return NaN;
+  try{var f=v.slice(1).toUpperCase().replace(/(SUM|AVERAGE|AVG|MAX|MIN|COUNT)\(([A-H])(\d+):([A-H])(\d+)\)/g,function(m,fn,c1,r1,c2,r2){var a=[];for(var c=C.indexOf(c1);c<=C.indexOf(c2);c++)for(var r=+r1;r<=+r2;r++)a.push(ev(C[c]+r,dp+1));var s=a.reduce(function(x,y){return x+y},0);return '('+(!a.length?0:fn==='SUM'?s:fn==='MAX'?Math.max.apply(0,a):fn==='MIN'?Math.min.apply(0,a):fn==='COUNT'?a.length:s/a.length)+')'}).replace(/[A-H]\d+/g,function(m){return '('+ev(m,dp+1)+')'});
+   if(!/^[0-9+\-*\/.() e]+$/i.test(f))return NaN;return Function('"use strict";return ('+f+')')()}catch(e){return NaN}}
+ function show(ref){var v=D[ref];if(v&&v[0]==='='){var r=ev(ref,0);return isNaN(r)?'#ERR':String(+r.toFixed(4))}return v||''}
+ var tb=b.querySelector('table'),ins=[];
+ tb.innerHTML='<tr><th></th>'+C.map(function(c){return '<th style="border:1px solid var(--bd);background:var(--mut);padding:4px">'+c+'</th>'}).join('')+'</tr>';
+ function refresh(){ins.forEach(function(p){if(p[0]!==document.activeElement)p[0].value=show(p[1])})}
+ for(var r=1;r<=R;r++){var tr=document.createElement('tr'),th=document.createElement('th');th.textContent=r;th.style.cssText='border:1px solid var(--bd);background:var(--mut);padding:4px 8px';tr.appendChild(th);
+  C.forEach(function(c){var ref=c+r,td=document.createElement('td'),i=document.createElement('input');td.style.cssText='border:1px solid var(--bd);padding:0';i.style.cssText='width:72px;border:0;padding:5px;background:transparent;color:var(--tx);font:inherit';i.value=show(ref);
+   i.onfocus=function(){i.value=D[ref]||''};
+   i.onblur=function(){D[ref]=i.value;store('sheet',JSON.stringify(D));setTimeout(refresh,0)};
+   i.onkeydown=function(e){if(e.key==='Enter')i.blur()};
+   ins.push([i,ref]);td.appendChild(i);tr.appendChild(td)});tb.appendChild(tr)}
+ b.querySelector('.btn').onclick=function(){var L=[];for(var r=1;r<=R;r++)L.push(C.map(function(c){return '"'+show(c+r).replace(/"/g,'""')+'"'}).join(','));dl('lembar.csv',L.join('\n'))};
+}},
+{id:'ppt',t:'Presentasi',i:'📽️',w:660,h:440,r:function(b){
+ var S=[{t:'Judul Presentasi',b:'Subjudul atau poin utama'}],k=0,col='#3b6cf6',fnt='Arial';
+ try{var o=JSON.parse(store('ppt')||'null');if(o&&o.S&&o.S.length){S=o.S;col=o.c;fnt=o.f||fnt}}catch(e){}
+ b.style.padding='0';b.style.display='flex';
+ b.innerHTML='<div class="sl" style="width:120px;overflow:auto;border-right:1px solid var(--bd);padding:6px;flex:none"></div><div style="flex:1;display:flex;flex-direction:column;padding:10px;gap:6px;min-width:0;overflow:auto"><div class="pv" style="aspect-ratio:16/9;border-radius:8px;color:#fff;padding:5%;overflow:hidden;position:relative"><img style="display:none;position:absolute;right:4%;top:50%;transform:translateY(-50%);max-width:38%;max-height:80%;border-radius:8px"><h2 style="margin:0 0 8px;font-size:22px"></h2><p style="margin:0;white-space:pre-wrap;font-size:14px"></p></div><input class="ti" placeholder="Judul slide" style="padding:8px;border-radius:8px;border:1px solid var(--bd);background:var(--win);color:var(--tx)"><textarea class="bo" placeholder="Isi slide" style="height:70px;min-height:0"></textarea><div class="ac"></div></div>';
+ var sl=b.querySelector('.sl'),P=b.querySelector('.pv'),ti=b.querySelector('.ti'),bo=b.querySelector('.bo'),ac=b.querySelector('.ac');
+ function save(){store('ppt',JSON.stringify({S:S,c:col,f:fnt}))}
+ function pv(){P.style.background=col;P.style.fontFamily=fam(fnt);var m=P.querySelector('img'),s=S[k];m.style.display=s.img?'block':'none';if(s.img)m.src=s.img;P.querySelector('h2').style.maxWidth=P.querySelector('p').style.maxWidth=s.img?'58%':'none';P.querySelector('h2').textContent=s.t;P.querySelector('p').textContent=s.b}
+ function side(){sl.innerHTML='';S.forEach(function(s,i){var e=document.createElement('button');e.className='btn';e.style.cssText='display:block;width:100%;margin:0 0 4px;padding:8px 4px;font-size:11px;'+(i===k?'border-color:var(--ac)':'');e.textContent=(i+1)+'. '+(s.t||'…').slice(0,14);e.onclick=function(){k=i;load()};sl.appendChild(e)})}
+ function load(){ti.value=S[k].t;bo.value=S[k].b;pv();side()}
+ ti.oninput=function(){S[k].t=ti.value;pv();side();save()};
+ bo.oninput=function(){S[k].b=bo.value;pv();save()};
+ function present(){var w=b.parentNode,o=document.createElement('div'),i=k;o.tabIndex=0;o.style.cssText='position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;justify-content:center;padding:8%;color:#fff;outline:none;background:'+col;
+  o.style.fontFamily=fam(fnt);o.innerHTML='<img style="display:none;position:absolute;right:6%;top:50%;transform:translateY(-50%);max-width:36%;max-height:70%;border-radius:12px"><h1 style="font-size:36px;margin:0 0 16px"></h1><p style="font-size:20px;white-space:pre-wrap;margin:0"></p><div style="position:absolute;bottom:8px;right:12px;font-size:12px;opacity:.8"></div>';
+  function d(){var m=o.querySelector('img');m.style.display=S[i].img?'block':'none';if(S[i].img)m.src=S[i].img;o.querySelector('h1').style.maxWidth=o.querySelector('p').style.maxWidth=S[i].img?'56%':'none';o.querySelector('h1').textContent=S[i].t;o.querySelector('p').textContent=S[i].b;o.querySelector('div').textContent=(i+1)+'/'+S.length+' · klik atau panah untuk lanjut, Esc keluar'}
+  o.onclick=function(){if(i<S.length-1){i++;d()}else o.remove()};
+  o.onkeydown=function(e){if(e.key==='ArrowRight'||e.key===' '){if(i<S.length-1){i++;d()}}else if(e.key==='ArrowLeft'){if(i>0){i--;d()}}else if(e.key==='Escape')o.remove()};
+  w.appendChild(o);d();o.focus()}
+ async function ex(){if(!window.PptxGenJS){toast('Pustaka PPT belum termuat');return}
+  var p=new PptxGenJS(),c=col.slice(1);
+  S.forEach(function(s){var x=p.addSlide();x.background={color:c};var w=s.img?5.2:8.8;x.addText(s.t,{x:.6,y:.6,w:w,h:1.2,fontSize:34,bold:true,color:'FFFFFF',fontFace:fnt});x.addText(s.b,{x:.6,y:2,w:w,h:3.2,fontSize:20,color:'FFFFFF',valign:'top',fontFace:fnt});if(s.img)x.addImage({data:s.img.replace(/^data:/,''),x:6.1,y:1,w:3.5,h:3.6,sizing:{type:'contain',w:3.5,h:3.6}})});
+  try{var blob=await p.write({outputType:'blob'});dl('presentasi.pptx',blob)}catch(e){toast('Gagal membuat PPTX')}}
+ function btn(t,f){var e=document.createElement('button');e.className='btn';e.style.cssText='padding:6px 10px;font-size:12px';e.textContent=t;e.onclick=f;ac.appendChild(e)}
+ btn('+ Slide',function(){S.splice(k+1,0,{t:'Slide baru',b:''});k++;load();save()});
+ btn('🗑 Hapus',function(){if(S.length>1){S.splice(k,1);k=Math.max(0,k-1);load();save()}});
+ btn('🖼 Gambar',function(){pick(function(u){S[k].img=u;pv();save()},900)});btn('✕ Gambar',function(){delete S[k].img;pv();save()});
+ btn('▶ Presentasikan',present);btn('⬇ PPTX',ex);
+ var cp=document.createElement('input');cp.type='color';cp.value=col;cp.title='Warna tema';cp.style.cssText='vertical-align:middle;margin-left:4px;height:30px;width:36px;border:0;background:none';cp.oninput=function(){col=cp.value;pv();save()};ac.appendChild(cp);
+ var fs=document.createElement('select');fs.title='Font';fs.style.cssText='padding:5px;border-radius:6px;border:1px solid var(--bd);background:var(--win);color:var(--tx);font-size:12px;margin-left:4px;max-width:120px';FONTS.forEach(function(n){var x=document.createElement('option');x.textContent=n;x.style.fontFamily=fam(n);fs.appendChild(x)});fs.value=fnt;fs.onchange=function(){fnt=fs.value;pv();save()};ac.appendChild(fs);
+ load();
+}},
+{id:'game',t:'Game',i:'🎮',w:380,h:470,r:function(b){
+ b.innerHTML='<div style="display:flex;gap:4px;margin-bottom:8px"><button class="btn" data-g="s" style="margin:0">🐍 Ular</button><button class="btn" data-g="x" style="margin:0">❌ XO</button><button class="btn" data-g="m" style="margin:0">🧠 Memori</button></div><div class="gm" style="text-align:center"></div>';
+ var gm=b.querySelector('.gm'),stop=null;
+ function clear(){if(stop){stop();stop=null}gm.innerHTML=''}
+ function mk(t,css){var e=document.createElement('div');e.className=t||'';if(css)e.style.cssText=css;gm.appendChild(e);return e}
+ function snake(){clear();var cv=document.createElement('canvas');cv.width=cv.height=300;cv.style.cssText='border:1px solid var(--bd);border-radius:8px;max-width:100%;background:var(--mut)';gm.appendChild(cv);
+  var info=mk('sm','margin:6px 0'),N=15,sn=[[7,7]],dr=[1,0],nd=[1,0],fd=[3,3],sc=0,over=false,x=cv.getContext('2d');
+  function draw(){x.clearRect(0,0,300,300);x.fillStyle='#e5484d';x.fillRect(fd[0]*20+2,fd[1]*20+2,16,16);x.fillStyle='#2fb36d';sn.forEach(function(p){x.fillRect(p[0]*20+1,p[1]*20+1,18,18)});info.textContent=over?'Game over! Skor: '+sc+'. Pilih Ular untuk main lagi.':'Skor: '+sc+' (panah keyboard atau tombol)'}
+  function step(){if(over)return;dr=nd;var h=[sn[0][0]+dr[0],sn[0][1]+dr[1]];
+   if(h[0]<0||h[1]<0||h[0]>=N||h[1]>=N||sn.some(function(p){return p[0]===h[0]&&p[1]===h[1]})){over=true;draw();return}
+   sn.unshift(h);if(h[0]===fd[0]&&h[1]===fd[1]){sc++;do{fd=[Math.floor(Math.random()*N),Math.floor(Math.random()*N)]}while(sn.some(function(p){return p[0]===fd[0]&&p[1]===fd[1]}))}else sn.pop();draw()}
+  var iv=setInterval(function(){if(!document.body.contains(cv)){clearInterval(iv);return}step()},130);
+  function turn(a,c){if(!(dr[0]+a===0&&dr[1]+c===0))nd=[a,c]}
+  function kd(e){var m={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]}[e.key];if(m){e.preventDefault();turn(m[0],m[1])}}
+  document.addEventListener('keydown',kd);stop=function(){clearInterval(iv);document.removeEventListener('keydown',kd)};
+  var pad=mk('','display:flex;gap:6px;justify-content:center');[['⬆',0,-1],['⬇',0,1],['⬅',-1,0],['➡',1,0]].forEach(function(d){var e=document.createElement('button');e.className='btn';e.style.cssText='margin:0;padding:8px 16px';e.textContent=d[0];e.onclick=function(){turn(d[1],d[2])};pad.appendChild(e)});
+  draw()}
+ function xo(){clear();var B=Array(9).fill(''),done=false,info=mk('sm','margin-bottom:8px;font-size:14px'),g=mk('','display:grid;grid-template-columns:repeat(3,84px);gap:6px;justify-content:center');
+  var L=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  function win(p){return L.some(function(l){return l.every(function(i){return B[i]===p})})}
+  function find(p){for(var i=0;i<9;i++)if(!B[i]){B[i]=p;var w=win(p);B[i]='';if(w)return i}return -1}
+  function ai(){var m=find('O');if(m<0)m=find('X');if(m<0&&!B[4])m=4;if(m<0){var e=[];B.forEach(function(v,i){if(!v)e.push(i)});m=e[Math.floor(Math.random()*e.length)]}B[m]='O'}
+  function draw(){g.innerHTML='';B.forEach(function(v,i){var e=document.createElement('button');e.className='btn';e.style.cssText='height:84px;font-size:36px;margin:0;padding:0';e.textContent=v;e.onclick=function(){if(B[i]||done)return;B[i]='X';if(!win('X')&&B.indexOf('')>-1)ai();
+    if(win('X')){done=true;info.textContent='Kamu menang! 🎉'}else if(win('O')){done=true;info.textContent='Komputer menang 🤖'}else if(B.indexOf('')<0){done=true;info.textContent='Seri!'}
+    draw()};g.appendChild(e)})}
+  info.textContent='Kamu X, komputer O. Giliranmu!';draw()}
+ function mem(){clear();var E=['🍎','🚀','🎧','🌵','🐱','⚽','🍕','🎲'],c=E.concat(E).sort(function(){return Math.random()-.5}),op=[],mv=0,mt=0,lock=false,bs=[],info=mk('sm','margin-bottom:8px;font-size:14px'),g=mk('','display:grid;grid-template-columns:repeat(4,70px);gap:6px;justify-content:center');
+  function upd(){info.textContent='Langkah: '+mv+' · Pasangan: '+mt+'/8'+(mt===8?' 🎉 Selesai!':'')}
+  c.forEach(function(v,i){var e=document.createElement('button');e.className='btn';e.style.cssText='height:70px;font-size:28px;padding:0;margin:0';e.textContent='❓';
+   e.onclick=function(){if(lock||op.indexOf(i)>-1||e.dataset.m)return;e.textContent=v;op.push(i);
+    if(op.length===2){mv++;var a=op[0],d=op[1];if(c[a]===c[d]){bs[a].dataset.m=1;bs[d].dataset.m=1;bs[a].style.opacity=bs[d].style.opacity=.5;mt++;op=[]}else{lock=true;setTimeout(function(){bs[a].textContent='❓';bs[d].textContent='❓';op=[];lock=false},700)}upd()}};
+   bs.push(e);g.appendChild(e)});upd()}
+ b.querySelectorAll('[data-g]').forEach(function(e){e.onclick=function(){({s:snake,x:xo,m:mem})[e.dataset.g]()}});
+ xo();
+}},
+{id:'music',t:'Musik',i:'🎧',w:660,h:460,r:function(b){
+ b.style.padding='0';b.style.display='flex';b.style.flexDirection='column';b.style.background='#121212';b.style.color='#fff';
+ var AC=null,G=null,src=null,t0=0,off=0,playing=false,shuf=false,rep=0,tok=0,cur=-1,view='all',likes=[],drag=false;
+ try{likes=JSON.parse(store('likes')||'[]')}catch(e){}
+ var P=[{t:'Senja di Pantai',bpm:84,root:130.81,pr:[[0,4],[5,4],[7,4],[5,4]],ar:[0,1,2,3,2,1,2,1],ld:'sine',lv:.1,dr:1},
+  {t:'Neon Malam',bpm:104,root:110,pr:[[0,3],[-4,4],[-2,4],[-4,4]],ar:[0,2,3,2,0,2,3,1],ld:'sawtooth',lv:.04,dr:1},
+  {t:'Pagi Cerah',bpm:120,root:146.83,pr:[[0,4],[7,4],[9,3],[5,4]],ar:[0,1,2,3,2,3,2,1],ld:'square',lv:.035,dr:1},
+  {t:'Hujan Sore',bpm:66,root:123.47,pr:[[0,3],[-2,4],[-4,4],[-2,4]],ar:[0,1,2,1,3,2,1,0],ld:'sine',lv:.1,dr:0}];
+ var T=P.map(function(p){return {t:p.t,a:'WebLaptop Studio',p:p,d:12*240/p.bpm+1}});
+ b.innerHTML='<div style="flex:1;display:flex;min-height:0"><div style="width:140px;background:#000;padding:10px;flex:none"><div style="font-weight:700;margin-bottom:10px">🎧 Musikku</div><div class="nv"></div></div><div class="ls" style="flex:1;overflow:auto;padding:12px;background:linear-gradient(#1f3a2b,#121212 220px)"></div></div><div style="background:#181818;border-top:1px solid #282828;padding:8px 12px"><div style="display:flex;align-items:center;gap:10px"><div class="ar" style="width:40px;height:40px;border-radius:4px;background:#333;flex:none"></div><div style="flex:1;min-width:0"><div class="nt" style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Pilih lagu</div><div class="na" style="font-size:11px;opacity:.7">&nbsp;</div></div><div class="cc" style="display:flex;gap:4px;align-items:center"></div></div><div style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px"><span class="tc">0:00</span><input class="sk" type="range" min="0" max="1000" value="0" style="flex:1;min-width:0;accent-color:#1db954"><span class="td">0:00</span><span>🔊</span><input class="vl" type="range" min="0" max="100" value="80" style="width:70px;accent-color:#1db954"></div></div>';
+ var nv=b.querySelector('.nv'),ls=b.querySelector('.ls'),ar=b.querySelector('.ar'),nt=b.querySelector('.nt'),na=b.querySelector('.na'),cc=b.querySelector('.cc'),tc=b.querySelector('.tc'),td=b.querySelector('.td'),sk=b.querySelector('.sk'),vl=b.querySelector('.vl');
+ function fmt(s){s=Math.max(0,Math.floor(s||0));return Math.floor(s/60)+':'+('0'+s%60).slice(-2)}
+ function hue(i){return 'linear-gradient(135deg,hsl('+(i*67%360)+',70%,55%),hsl('+((i*67+50)%360)+',70%,35%))'}
+ function synth(p){return new Promise(function(ok,no){
+  var spb=60/p.bpm,bars=12,sr=44100,dur=bars*4*spb+1,o=new OfflineAudioContext(2,Math.ceil(dur*sr),sr),m=o.createGain();m.gain.value=.55;m.connect(o.destination);
+  function f(s){return p.root*Math.pow(2,s/12)}
+  function note(t,fr,d,ty,v){var os=o.createOscillator(),g=o.createGain();os.type=ty;os.frequency.value=fr;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.03);g.gain.exponentialRampToValueAtTime(.0001,t+d);os.connect(g);g.connect(m);os.start(t);os.stop(t+d+.05)}
+  var nb=o.createBuffer(1,sr,sr),nd=nb.getChannelData(0);for(var i=0;i<sr;i++)nd[i]=Math.random()*2-1;
+  function kick(t){var os=o.createOscillator(),g=o.createGain();os.frequency.setValueAtTime(140,t);os.frequency.exponentialRampToValueAtTime(40,t+.12);g.gain.setValueAtTime(.9,t);g.gain.exponentialRampToValueAtTime(.001,t+.25);os.connect(g);g.connect(m);os.start(t);os.stop(t+.3)}
+  function hat(t){var s=o.createBufferSource(),g=o.createGain(),h=o.createBiquadFilter();s.buffer=nb;h.type='highpass';h.frequency.value=7000;g.gain.setValueAtTime(.18,t);g.gain.exponentialRampToValueAtTime(.001,t+.05);s.connect(h);h.connect(g);g.connect(m);s.start(t);s.stop(t+.06)}
+  for(var bar=0;bar<bars;bar++){var c=p.pr[bar%p.pr.length],r=c[0],th=c[1],q=[0,th,7,12],t=bar*4*spb;
+   [0,th,7].forEach(function(x){note(t,f(r+x),4*spb,'triangle',.1)});
+   note(t,f(r-12),1.9*spb,'sine',.35);note(t+2*spb,f(r-12),1.9*spb,'sine',.35);
+   for(var s=0;s<8;s++)note(t+s*spb/2,f(r+12+q[p.ar[s%p.ar.length]]),spb*.55,p.ld,p.lv);
+   if(p.dr)for(var k=0;k<4;k++){kick(t+k*spb);hat(t+k*spb+spb/2)}}
+  o.startRendering().then(ok,no)})}
+ function ctx(){if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();G=AC.createGain();G.gain.value=vl.value/100;G.connect(AC.destination)}if(AC.state==='suspended')AC.resume();return AC}
+ function pos(){return playing&&AC?AC.currentTime-t0:off}
+ function stopSrc(){if(src){src.onended=null;try{src.stop()}catch(e){}src=null}playing=false}
+ function vis(){var r=[];T.forEach(function(t,i){if(view==='all'||likes.indexOf(t.t)>-1)r.push(i)});return r}
+ async function play(i,o){ctx();var my=++tok;stopSrc();cur=i;off=o||0;upd();var t=T[i],bf;
+  try{if(!t.buf)t.buf=await synth(t.p);bf=t.buf}catch(e){toast('Gagal memuat lagu');return}
+  if(my!==tok)return;t.d=bf.duration;if(off>=bf.duration)off=0;
+  src=AC.createBufferSource();src.buffer=bf;src.connect(G);src.onended=function(){if(my===tok&&playing)nxt(true)};
+  t0=AC.currentTime-off;src.start(0,off);playing=true;upd()}
+ function toggle(){if(cur<0){var v=vis();if(v.length)play(v[0]);return}if(playing){off=AC.currentTime-t0;stopSrc();upd()}else play(cur,off)}
+ function nxt(auto){var v=vis();if(!v.length)return;if(auto&&rep===2){play(cur,0);return}var k=v.indexOf(cur),n;
+  if(shuf&&v.length>1){do{n=v[Math.floor(Math.random()*v.length)]}while(n===cur)}
+  else{k++;if(k>=v.length){if(auto&&rep===0){stopSrc();off=0;upd();upd2();return}k=0}n=v[k]}
+  play(n)}
+ function prv(){var v=vis();if(!v.length)return;if(cur>=0&&pos()>3){play(cur,0);return}var k=v.indexOf(cur)-1;if(k<0)k=v.length-1;play(v[k])}
+ function lk(n){var k=likes.indexOf(n);if(k>-1)likes.splice(k,1);else likes.push(n);store('likes',JSON.stringify(likes));upd()}
+ function cb(txt,f,big){var e=document.createElement('button');e.textContent=txt;e.onclick=f;e.style.cssText='border:0;cursor:pointer;color:#fff;background:transparent;font-size:16px;padding:4px 8px;border-radius:16px'+(big?';background:#fff;color:#000;width:34px;height:34px;padding:0':'');cc.appendChild(e);return e}
+ var bS=cb('🔀',function(){shuf=!shuf;upd()}),bP=cb('⏮',prv),bT=cb('▶',toggle,1),bN=cb('⏭',function(){nxt(false)}),bR=cb('🔁',function(){rep=(rep+1)%3;upd()});
+ function nb(txt,f){var e=document.createElement('button');e.textContent=txt;e.onclick=f;e.style.cssText='display:block;width:100%;text-align:left;border:0;background:transparent;color:#ddd;padding:8px 4px;cursor:pointer;font-size:13px;border-radius:6px';nv.appendChild(e)}
+ nb('🏠 Semua Lagu',function(){view='all';upd()});nb('♥ Favorit',function(){view='fav';upd()});
+ nb('＋ Tambah lagu',function(){var i=document.createElement('input');i.type='file';i.accept='audio/*';i.multiple=true;
+  i.onchange=async function(){ctx();for(var f of i.files){try{var bf=await AC.decodeAudioData(await f.arrayBuffer());T.push({t:f.name.replace(/\.[^.]+$/,''),a:'Dari perangkat',buf:bf,d:bf.duration})}catch(e){toast('Tidak bisa memutar '+f.name)}}upd()};i.click()});
+ function upd(){
+  bT.textContent=playing?'⏸':'▶';bS.style.color=shuf?'#1db954':'#fff';bR.style.color=rep?'#1db954':'#fff';bR.textContent=rep===2?'🔂':'🔁';
+  var c=cur>=0?T[cur]:null;nt.textContent=c?c.t:'Pilih lagu';na.textContent=c?c.a:'\u00a0';ar.style.background=c?hue(cur):'#333';td.textContent=c?fmt(c.d):'0:00';
+  ls.innerHTML='';var h=document.createElement('h2');h.textContent=view==='all'?'Semua Lagu':'Favorit';h.style.margin='0 0 10px';ls.appendChild(h);
+  var v=vis();if(!v.length){var e=document.createElement('div');e.textContent='Belum ada favorit. Tekan ♡ pada sebuah lagu.';e.style.opacity='.6';ls.appendChild(e)}
+  v.forEach(function(i){var t=T[i],r=document.createElement('div');r.style.cssText='display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:6px;cursor:pointer'+(i===cur?';background:#2a2a2a':'');
+   var n=document.createElement('span');n.style.cssText='width:18px;text-align:center;font-size:12px;opacity:.7';n.textContent=(i===cur&&playing)?'▶':String(i+1);
+   var a=document.createElement('div');a.style.cssText='width:36px;height:36px;border-radius:4px;flex:none;background:'+hue(i);
+   var m=document.createElement('div');m.style.cssText='flex:1;min-width:0';var a1=document.createElement('div');a1.textContent=t.t;a1.style.cssText='font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'+(i===cur?'color:#1db954':'');var a2=document.createElement('div');a2.textContent=t.a;a2.style.cssText='font-size:11px;opacity:.6';m.append(a1,a2);
+   var hh=document.createElement('span');var lked=likes.indexOf(t.t)>-1;hh.textContent=lked?'♥':'♡';hh.style.color=lked?'#1db954':'#aaa';hh.onclick=function(e){e.stopPropagation();lk(t.t)};
+   var dd=document.createElement('span');dd.style.cssText='font-size:11px;opacity:.6;width:34px;text-align:right';dd.textContent=fmt(t.d);
+   r.append(n,a,m,hh,dd);r.onclick=function(){play(i)};ls.appendChild(r)})}
+ function upd2(){if(drag||cur<0)return;var d=T[cur].d,p=Math.min(pos(),d);sk.value=d?p/d*1000:0;tc.textContent=fmt(p)}
+ sk.oninput=function(){drag=true;if(cur>=0)tc.textContent=fmt(sk.value/1000*T[cur].d)};
+ sk.onchange=function(){drag=false;if(cur<0)return;var o=sk.value/1000*T[cur].d;if(playing)play(cur,o);else{off=o;upd2()}};
+ vl.oninput=function(){if(G)G.gain.value=vl.value/100};
+ var iv=setInterval(function(){if(!document.body.contains(b)){clearInterval(iv);tok++;stopSrc();try{if(AC)AC.close()}catch(e){}return}upd2()},250);
+ upd();
+}},
+{id:'store',t:'Tambah Aplikasi',i:'➕',w:440,h:500,r:function(b){
+ var S0='width:100%;padding:8px;border-radius:8px;border:1px solid var(--bd);background:var(--win);color:var(--tx);font:inherit;font-size:13px';
+ b.innerHTML='<div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;gap:6px"><input class="nm" placeholder="Nama aplikasi" style="'+S0+'"><input class="em" placeholder="📦" maxlength="4" style="'+S0+';width:60px;text-align:center"></div><select class="ty" style="'+S0+'"><option value="ai">✨ Buat dengan AI</option><option value="html">🧩 Tempel kode HTML</option><option value="link">🔗 Tautan web</option></select><textarea class="tx" style="'+S0+';height:110px;min-height:0;resize:vertical"></textarea><button class="btn pb" style="margin:0">Pasang aplikasi</button><div class="sm st" style="text-align:left"></div></div><h4>Aplikasi saya</h4><div class="ml"></div>';
+ var nm=b.querySelector('.nm'),em=b.querySelector('.em'),ty=b.querySelector('.ty'),tx=b.querySelector('.tx'),pb=b.querySelector('.pb'),st=b.querySelector('.st'),ml=b.querySelector('.ml');
+ var PH={ai:'Jelaskan aplikasi yang diinginkan, mis. pengingat minum air dengan hitung mundur',html:'Tempel kode HTML lengkap di sini…',link:'https://contoh.com'};
+ function say(m){st.textContent=m}
+ ty.onchange=function(){tx.placeholder=PH[ty.value]};ty.onchange();
+ function list(){ml.innerHTML='';if(!CU.length){ml.innerHTML='<div class="sm" style="text-align:left">Belum ada aplikasi buatan Anda.</div>';return}
+  CU.slice().forEach(function(a){var r=document.createElement('div');r.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd)';var s=document.createElement('span');s.style.flex='1';s.textContent=a.i+' '+a.t;
+   var o=document.createElement('button');o.className='btn';o.style.cssText='margin:0;padding:4px 10px';o.textContent='Buka';o.onclick=function(){open(a)};
+   var d=document.createElement('button');d.className='btn';d.style.cssText='margin:0;padding:4px 10px';d.textContent='Hapus';d.onclick=function(){del(a);list()};
+   r.append(s,o,d);ml.appendChild(r)})}
+ pb.onclick=async function(){
+  var t=nm.value.trim(),k=ty.value,c=tx.value.trim();
+  if(!t||!c){say('Isi nama dan '+(k==='html'?'kode':k==='ai'?'deskripsi':'alamat')+' dulu.');return}
+  var ic=em.value.trim()||'📦';
+  if(k==='link'){if(!/^https?:\/\//i.test(c)){if(/^[^\s]+\.[a-z]{2,}/i.test(c))c='https://'+c;else{say('Alamat tidak valid.');return}}c=c.replace(/^http:/i,'https:')}
+  if(k==='ai'){pb.disabled=true;say('AI sedang membuat aplikasi…');
+   try{var S=window.claude?await claude.use('sample'):null;if(!S)throw {code:'na'};
+    var r=await S('Buat satu aplikasi web dalam SATU file HTML lengkap (HTML, CSS, dan JS inline) sesuai deskripsi ini: '+c+'\n\nAturan: jangan pakai library, jaringan, atau localStorage; tampilan responsif dan rapi; teks berbahasa Indonesia; balas HANYA kode HTML, tanpa penjelasan dan tanpa tanda ```.',{cache:false});
+    c=r.text.replace(/^```(?:html)?\s*/i,'').replace(/```\s*$/,'').trim();k='html'}
+   catch(e){say(e&&e.code==='not_granted'?'Izin AI ditolak.':'Gagal membuat aplikasi dengan AI.');pb.disabled=false;return}
+   pb.disabled=false}
+  reg({id:'u'+Date.now(),t:t,i:ic,k:k,c:c});saveC();nm.value=em.value=tx.value='';say('✅ '+t+' terpasang! Cari di desktop atau menu Mulai.');list()};
+ list();
+}},
+{id:'set',t:'Pengaturan',i:'⚙️',w:340,h:300,r:function(b){
+ var W=WALLS;
+ b.innerHTML='<h4 style="margin-top:0">Wallpaper</h4><div id="w"></div><h4>Tema</h4><button class="btn" data-t="light">☀️ Terang</button><button class="btn" data-t="dark">🌙 Gelap</button><button class="btn" data-t="">Otomatis</button>';
+ W.forEach(function(c,i){var s=document.createElement('span');s.className='sw';s.style.background='linear-gradient(135deg,'+c[0]+','+c[1]+')';s.onclick=function(){wall(i)};b.querySelector('#w').appendChild(s)});
+ b.querySelectorAll('[data-t]').forEach(function(e){e.onclick=function(){theme(e.dataset.t)}});
+ window.WALLS=W;
+}}];
+var WALLS=[['#4f8cff','#9b5cff'],['#ff7e5f','#feb47b'],['#11998e','#38ef7d'],['#232526','#414345'],['#fc4a1a','#f7b733'],['#f093fb','#f5576c'],['#43cea2','#185a9d'],['#654ea3','#eaafc8'],['#0f2027','#2c5364'],['#141e30','#243b55'],['#000428','#004e92'],['#56ab2f','#a8e063'],['#ee9ca7','#ffdde1'],['#c31432','#240b36']];
+function wall(i){var c=WALLS[i];document.documentElement.style.setProperty('--bg1',c[0]);document.documentElement.style.setProperty('--bg2',c[1]);store('wall',i)}
+function theme(t){if(t)document.documentElement.setAttribute('data-theme',t);else document.documentElement.removeAttribute('data-theme');store('theme',t)}
+var sw=store('wall');if(sw!==null)wall(+sw);var st=store('theme');if(st)theme(st);
+
+APPS.forEach(function(a,i){
+ var e=document.createElement('div');e.className='ico';e.tabIndex=0;var rows=Math.max(3,Math.floor((desk.clientHeight-14)/92));e.style.top=(14+(i%rows)*92)+'px';e.style.left=(14+Math.floor(i/rows)*92)+'px';
+ e.innerHTML='<b>'+a.i+'</b>'+a.t;e.onclick=function(){open(a)};
+ e.onkeydown=function(k){if(k.key==='Enter')open(a)};desk.appendChild(e);
+ });
+var K={calc:'kalkulator hitung',note:'catatan notes tulis',clock:'jam waktu stopwatch',todo:'tugas todo',web:'browser chrome internet google',ai:'asisten ai claude chat',doc:'dokumen word teks',sheet:'lembar excel spreadsheet tabel',ppt:'presentasi powerpoint slide',game:'game ular xo memori main',music:'musik spotify lagu',set:'pengaturan wallpaper tema',store:'tambah aplikasi pasang install buat app'};
+var sq=document.createElement('input');sq.type='search';sq.placeholder='🔍 Cari aplikasi…';sq.style.cssText='width:100%;padding:8px 12px;border-radius:20px;border:1px solid var(--bd);background:var(--win);color:var(--tx);margin-top:8px;font-size:13px;outline:none';
+var mg=document.createElement('div');mg.className='mg';
+var nr=document.createElement('div');nr.className='sm';nr.style.cssText='padding:14px 0;display:none';nr.textContent='Aplikasi tidak ditemukan';
+var off=document.createElement('button');off.className='mo';off.textContent='⏻  Muat ulang';off.onclick=function(){location.reload()};
+APPS.forEach(function(a){var m=document.createElement('button');m.innerHTML='<b>'+a.i+'</b>'+a.t;m.dataset.k=(a.t+' '+(K[a.id]||'')).toLowerCase();m.onclick=function(){open(a);menu.style.display='none'};mg.appendChild(m)});
+sq.oninput=function(){var q=sq.value.trim().toLowerCase(),n=0;[].forEach.call(mg.children,function(m){var h=!q||m.dataset.k.indexOf(q)>-1;m.style.display=h?'':'none';if(h)n++});nr.style.display=n?'none':'block'};
+sq.onkeydown=function(e){if(e.key==='Enter'){var f=[].filter.call(mg.children,function(m){return m.style.display!=='none'})[0];if(f)f.click()}else if(e.key==='Escape')menu.style.display='none'};
+menu.append(mg,nr,sq,off);
+var CU=[],NI=APPS.length;
+function saveC(){store('apps',JSON.stringify(CU.map(function(a){return {id:a.id,t:a.t,i:a.i,k:a.k,c:a.c}})))}
+function mkR(a){return function(b){b.style.padding='0';
+ if(a.k==='link'){b.style.padding='16px';b.style.textAlign='center';
+  var h=document.createElement('div');h.className='big';h.style.fontSize='22px';h.textContent=a.t;b.appendChild(h);
+  var m=document.createElement('div');m.className='sm';m.style.wordBreak='break-all';m.textContent=a.c;b.appendChild(m);
+  var l=document.createElement('a');l.className='btn';l.textContent='Buka di tab baru ↗';l.href=a.c;l.target='_blank';l.rel='noopener noreferrer';l.style.cssText='display:inline-block;margin-top:14px;text-decoration:none;padding:10px 18px;background:var(--ac);color:#fff';b.appendChild(l)}
+ else{var f=document.createElement('iframe');f.setAttribute('sandbox','allow-scripts allow-forms');f.style.cssText='width:100%;height:100%;border:0;background:#fff;display:block';f.srcdoc=a.c;b.appendChild(f)}}}
+function reg(a){a.w=a.w||480;a.h=a.h||380;a.r=mkR(a);var i=NI++;APPS.push(a);CU.push(a);
+ var e=document.createElement('div');e.className='ico';e.tabIndex=0;var rows=Math.max(3,Math.floor((desk.clientHeight-14)/92));e.style.top=(14+(i%rows)*92)+'px';e.style.left=(14+Math.floor(i/rows)*92)+'px';
+ e.innerHTML='<b></b><span></span>';e.firstChild.textContent=a.i;e.lastChild.textContent=a.t;e.onclick=function(){open(a)};e.onkeydown=function(k){if(k.key==='Enter')open(a)};desk.appendChild(e);a.ico=e;
+ var m=document.createElement('button');m.innerHTML='<b></b>';m.firstChild.textContent=a.i;m.appendChild(document.createTextNode(a.t));m.dataset.k=(a.t+' '+(a.k==='link'?'tautan web':'aplikasi')).toLowerCase();m.onclick=function(){open(a);menu.style.display='none'};mg.appendChild(m);a.mb=m}
+function del(a){if(wins[a.id]){wins[a.id].el.remove();wins[a.id].tk.remove();delete wins[a.id]}a.ico.remove();a.mb.remove();APPS.splice(APPS.indexOf(a),1);CU.splice(CU.indexOf(a),1);saveC()}
+try{JSON.parse(store('apps')||'[]').forEach(function(a){if(a&&a.id&&a.t)reg(a)})}catch(e){}
+$('#start').onclick=function(e){e.stopPropagation();var s=menu.style.display==='block';menu.style.display=s?'none':'block';if(!s){sq.value='';sq.oninput();sq.focus()}};
+document.addEventListener('click',function(e){if(!menu.contains(e.target))menu.style.display='none'});
+
+function focus(id){z++;var o=wins[id];o.el.style.zIndex=z;o.el.classList.remove('min');
+ Object.keys(wins).forEach(function(k){wins[k].tk.classList.toggle('on',k===id&&true)})}
+function open(a){
+ if(wins[a.id]){focus(a.id);return}
+ var el=document.createElement('div'),small=desk.clientWidth<700;
+ el.className='win'+(small?' max':'');el.style.width=a.w+'px';el.style.height=a.h+'px';
+ var n=Object.keys(wins).length;el.style.left=(120+n*28)+'px';el.style.top=(30+n*28)+'px';
+ el.innerHTML='<div class="tb"><span>'+a.i+' '+a.t+'</span><button class="m" title="Kecilkan">–</button><button class="mx" title="Perbesar">□</button><button class="x" title="Tutup">✕</button></div><div class="body"></div>';
+ desk.appendChild(el);a.r(el.querySelector('.body'));
+ var tk=document.createElement('button');tk.textContent=a.i+' '+a.t;tasks.appendChild(tk);
+ wins[a.id]={el:el,tk:tk};
+ tk.onclick=function(){if(el.classList.contains('min')||!tk.classList.contains('on'))focus(a.id);else{el.classList.add('min');tk.classList.remove('on')}};
+ el.addEventListener('pointerdown',function(){focus(a.id)});
+ el.querySelector('.m').onclick=function(){el.classList.add('min');tk.classList.remove('on')};
+ el.querySelector('.mx').onclick=function(){el.classList.toggle('max')};
+ el.querySelector('.x').onclick=function(){el.remove();tk.remove();delete wins[a.id]};
+ var tb=el.querySelector('.tb'),dx,dy,drag=false;
+ tb.addEventListener('pointerdown',function(e){if(e.target.tagName==='BUTTON'||el.classList.contains('max'))return;drag=true;dx=e.clientX-el.offsetLeft;dy=e.clientY-el.offsetTop;tb.setPointerCapture(e.pointerId)});
+ tb.addEventListener('pointermove',function(e){if(!drag)return;
+  el.style.left=Math.max(0,Math.min(desk.clientWidth-80,e.clientX-dx))+'px';el.style.top=Math.max(0,Math.min(desk.clientHeight-40,e.clientY-dy))+'px'});
+ tb.addEventListener('pointerup',function(){drag=false});
+ tb.addEventListener('dblclick',function(){el.classList.toggle('max')});
+ focus(a.id);
+}
+function clock(){var n=new Date();$('#clock').innerHTML=n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})+'<br>'+n.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}
+clock();setInterval(clock,1000);
+</script>
+</body>
+</html>
